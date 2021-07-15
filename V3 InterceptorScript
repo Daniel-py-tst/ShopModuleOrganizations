@@ -1,25 +1,22 @@
 local player = game.Players.LocalPlayer
-local Shop = require(game:GetService("ReplicatedStorage"):WaitForChild("oop"))
+local Shop = require(game:GetService("ReplicatedStorage"):WaitForChild("ShopModuleV3"))
 db = true
-bd = true
+
 
 local PotionShop = Shop:New(game.Workspace.ShopFolder, player.PlayerGui:WaitForChild("ShopUi"):WaitForChild("ShopUiFrame"))
 
-PotionShop.right.MouseButton1Down:Connect(function()
-	if db == true then
-		db = false
-		PotionShop.Next()
-		PotionShop.Show(PotionShop.T,PotionShop.ItemTable)
-		db = true
-	end
-end)
 
-
-PotionShop.left.MouseButton1Down:Connect(function()
-	if db == true then
-		db = false
-		PotionShop.Prev()
-		PotionShop.Show(PotionShop.T,PotionShop.ItemTable)
-		db = true
-	end
-end)
+for i,v in pairs({PotionShop.right, PotionShop.left}) do
+	v.MouseButton1Down:Connect(function()
+		if db == true then
+			db = false
+			if v.Name == "Left" then
+				PotionShop.Prev()
+			else
+				PotionShop.Next()
+			end
+			PotionShop.Show(PotionShop.T,PotionShop.ItemTable)
+			db = true
+		end		
+	end)
+end
