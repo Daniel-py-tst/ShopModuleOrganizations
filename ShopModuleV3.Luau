@@ -65,11 +65,11 @@ function Shop:New(ShopFolder, GuiFrame)
 		if self.T[self.currentItem]:IsA("Model") then
 			local t1 = TweenService:Create(self.T[self.currentItem].PrimaryPart,TweenInfo.new(self.tweenTime),{CFrame = self.returnPart.CFrame})
 			t1:Play()
-			t1.Completed:Wait()
+			--t1.Completed:Wait() --optional wait()
 		else
 			local t2 = TweenService:Create(self.T[self.currentItem],TweenInfo.new(self.tweenTime),{CFrame = self.returnPart.CFrame})
 			t2:Play()
-			t2.Completed:Wait()
+			--t2.Completed:Wait() --optional wait()
 		end
 	end
 	----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
