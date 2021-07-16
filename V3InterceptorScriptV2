@@ -10,7 +10,7 @@ for i,v in pairs({PotionShop.right, PotionShop.left}) do
 	v.MouseButton1Down:Connect(function()
 		if db == true then
 			db = false
-			if v.Name == "Left" then
+			if v == PotionShop.left then
 				PotionShop.Prev()
 			else
 				PotionShop.Next()
