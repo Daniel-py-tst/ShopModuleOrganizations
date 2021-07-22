@@ -1,9 +1,9 @@
 local player = game.Players.LocalPlayer
-local Shop = require(game:GetService("ReplicatedStorage"):WaitForChild("ShopModuleV3"))
+local Shop = require(script.Parent)
 db = true
 
 
-local PotionShop = Shop:New(game.Workspace.ShopFolder, player.PlayerGui:WaitForChild("ShopUi"):WaitForChild("ShopUiFrame"))
+local PotionShop = Shop:New(game.Workspace.ShopFolder, player.PlayerGui:WaitForChild("ShopUi"):WaitForChild("ShopUiFrame"), game.Players.LocalPlayer)
 
 
 for i,v in pairs({PotionShop.right, PotionShop.left}) do
@@ -11,11 +11,11 @@ for i,v in pairs({PotionShop.right, PotionShop.left}) do
 		if db == true then
 			db = false
 			if v == PotionShop.left then
-				PotionShop.Prev()
+				PotionShop:Prev()
 			else
-				PotionShop.Next()
+				PotionShop:Next()
 			end
-			PotionShop.Show(PotionShop.T,PotionShop.ItemTable)
+			PotionShop:Show()
 			db = true
 		end		
 	end)
