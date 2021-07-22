@@ -3,6 +3,7 @@ Shop.__index = Shop
 
 local TweenService = game:GetService("TweenService")
 local Runservice = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Essentials = require(game:GetService("ReplicatedStorage"):WaitForChild("EssentialFunctions"))
 
 local function SortertableOranizer(tab, FrameTab)
@@ -22,78 +23,83 @@ end
 
 
 
-function Shop:New(ShopFolder, GuiFrame)
+function Shop:New(ShopFolder, GuiFrame, Player)
 	
 
-	local t = setmetatable({},self)
-	t.__index = t
+	local newShop = setmetatable({},Shop)
+	newShop.__index = newShop
 	Essentials.WeldModelsToRoot(ShopFolder.ShopItems:GetChildren())
 	
-	self.clickSound = ShopFolder.Sounds.click2down
-	self.purchaseSound = ShopFolder.Sounds.purchase
-	self.frame = GuiFrame
-	self.left = GuiFrame.Left
-	self.right =  GuiFrame.Right
-	self.close =  GuiFrame.Close
-	self.buy =  GuiFrame.Buy
-	self.showcasePart = ShopFolder.Parts.ShowCasePoint
-	self.viewPart = ShopFolder.Parts.ViewPoint
-	self.anchorPart = ShopFolder.Parts.AnchorPoint
-	self.returnPart = ShopFolder.Parts.ReturnPoint
-	self.openPart = ShopFolder.Parts.OpenPoint
-	self.camera = workspace.CurrentCamera
-	self.weldCon = ShopFolder.Parts.Weld
-	self.currentItem = 1
-	self.uiT = .2
-	self.tweenTime = .35
-	self.T,self.ItemTable = SortertableOranizer(ShopFolder.ShopItems:GetChildren(), GuiFrame.DetailsFrame.Items:GetChildren())
+	newShop.buyEvent = ReplicatedStorage:WaitForChild("BuyTool")
+	newShop.clickSound = ShopFolder.Sounds.click2down
+	newShop.purchaseSound = ShopFolder.Sounds.purchase
+	
+	newShop.frame = GuiFrame
+	newShop.left = GuiFrame.Left
+	newShop.right =  GuiFrame.Right
+	newShop.close =  GuiFrame.Close
+	newShop.buy =  GuiFrame.Buy
+	
+	newShop.buyFrame = newShop.frame.Parent.BuyFrame
+	newShop.yes = newShop.buyFrame.SureFrame.Yes
+	newShop.no = newShop.buyFrame.SureFrame.No
+	
+	newShop.player = Player
+	newShop.showcasePart = ShopFolder.Parts.ShowCasePoint
+	newShop.viewPart = ShopFolder.Parts.ViewPoint
+	newShop.anchorPart = ShopFolder.Parts.AnchorPoint
+	newShop.returnPart = ShopFolder.Parts.ReturnPoint
+	newShop.openPart = ShopFolder.Parts.OpenPoint
+	newShop.camera = workspace.CurrentCamera
+	newShop.weldCon = ShopFolder.Parts.Weld
+	newShop.currentItem = 1
+	newShop.n = .1
+	newShop.uiT = .2
+	newShop.tweenTime = .35
+	newShop.T,newShop.ItemTable = SortertableOranizer(ShopFolder.ShopItems:GetChildren(), GuiFrame.DetailsFrame.Items:GetChildren())
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	
 	local function SetReturnPart()
-		if self.T[self.currentItem]:IsA("Model") then
-			self.returnPart.CFrame = self.T[self.currentItem]:GetPrimaryPartCFrame()
+		if newShop.T[newShop.currentItem]:IsA("Model") then
+			newShop.returnPart.CFrame = newShop.T[newShop.currentItem]:GetPrimaryPartCFrame()
 		else
-			self.returnPart.Position = self.T[self.currentItem].Position
+			newShop.returnPart.Position = newShop.T[newShop.currentItem].Position
 		end
 	end
 	---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	local function TweenBackPrevobj()
-		self.ItemTable[self.T[self.currentItem]][1] = false
-		self.ItemTable[self.T[self.currentItem]][2].Visible = false
+		newShop.ItemTable[newShop.T[newShop.currentItem]][1] = false
+		newShop.ItemTable[newShop.T[newShop.currentItem]][2].Visible = false
 		
-		self.buy.TextLabel.Text = "..."
+		newShop.buy.TextLabel.Text = "..."
 		
-		if self.T[self.currentItem]:IsA("Model") then
-			local t1 = TweenService:Create(self.T[self.currentItem].PrimaryPart,TweenInfo.new(self.tweenTime),{CFrame = self.returnPart.CFrame})
+		if newShop.T[newShop.currentItem]:IsA("Model") then
+			local t1 = TweenService:Create(newShop.T[newShop.currentItem].PrimaryPart,TweenInfo.new(newShop.tweenTime),{CFrame = newShop.returnPart.CFrame})
 			t1:Play()
-			--t1.Completed:Wait() --optional wait()
 		else
-			local t2 = TweenService:Create(self.T[self.currentItem],TweenInfo.new(self.tweenTime),{CFrame = self.returnPart.CFrame})
+			local t2 = TweenService:Create(newShop.T[newShop.currentItem],TweenInfo.new(newShop.tweenTime),{CFrame = newShop.returnPart.CFrame})
 			t2:Play()
-			--t2.Completed:Wait() --optional wait()
 		end
 	end
 	----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	
-	
-	
-	self.Next = function()
-		self.clickSound:Play()
+	function Shop:Next()
+		newShop.clickSound:Play()
 		TweenBackPrevobj()
 
-		if self.currentItem >= #self.T then
-			self.currentItem = 1
+		if newShop.currentItem >= #newShop.T then
+			newShop.currentItem = 1
 		else
 			-- moves right
-			self.currentItem += 1
+			newShop.currentItem += 1
 		end
 		SetReturnPart()
 	end
 	
 	
-	self.Prev = function()
+	function Shop:Prev()
 		self.clickSound:Play()
 		TweenBackPrevobj()
-		
+
 		if  self.currentItem <= 1 then
 			self.currentItem = #self.T
 		else
@@ -102,39 +108,40 @@ function Shop:New(ShopFolder, GuiFrame)
 		end
 		SetReturnPart()
 	end
-	
-	self.Show = function(T,ObjectStateTable)
-		if T[self.currentItem]:IsA("Model") then
-			local t1 = TweenService:Create(T[self.currentItem].PrimaryPart,TweenInfo.new(self.tweenTime),{CFrame = self.showcasePart.CFrame})
-			t1:Play()
-			t1.Completed:Wait()
-		else
-			local t2 = TweenService:Create(T[self.currentItem],TweenInfo.new(self.tweenTime),{CFrame = self.showcasePart.CFrame})
-			t2:Play()
-			t2.Completed:Wait()
-		end
+	--newShop.Prev = function()
 		
-		ObjectStateTable[T[self.currentItem]][1] = true
-		ObjectStateTable[T[self.currentItem]][2].Visible = true
+	--end
+	function Shop:Show()
+		if self.T[self.currentItem]:IsA("Model") then
+			local t1 = TweenService:Create(self.T[self.currentItem].PrimaryPart,TweenInfo.new(self.tweenTime),{CFrame = self.showcasePart.CFrame})
+			t1:Play()
+		else
+			local t2 = TweenService:Create(self.T[self.currentItem],TweenInfo.new(self.tweenTime),{CFrame = self.showcasePart.CFrame})
+			t2:Play()
+		end
+		wait(self.n)
+		self.ItemTable[self.T[self.currentItem]][1] = true
+		self.ItemTable[self.T[self.currentItem]][2].Visible = true
 		local c c = Runservice.Heartbeat:Connect(function()
-			if ObjectStateTable[T[self.currentItem]][1] == true then
+			if self.ItemTable[self.T[newShop.currentItem]][1] == true then
 				--show.Text = "Current Part: "..ObjectStateTable[T[CurrentItem]][2].N.Text
-				self.frame.Buy.TextLabel.Text = "$"..ObjectStateTable[T[self.currentItem]][2].Price.Value
-				if T[self.currentItem]:IsA("Model") then
-					T[self.currentItem]:SetPrimaryPartCFrame(T[self.currentItem]:GetPrimaryPartCFrame() * CFrame.Angles(0,.05,0.01))
+				self.frame.Buy.TextLabel.Text = "$"..self.ItemTable[self.T[self.currentItem]][2].Price.Value
+				if self.T[self.currentItem]:IsA("Model") then
+					self.T[self.currentItem]:SetPrimaryPartCFrame(self.T[self.currentItem]:GetPrimaryPartCFrame() * CFrame.Angles(0,.05,0.01))
 				else
-					T[self.currentItem].CFrame *= CFrame.Angles(0,.05,0.01)
+					self.T[self.currentItem].CFrame *= CFrame.Angles(0,.05,0.01)
 				end
 			else
 				c:Disconnect()
 			end
 		end)
 	end
+
 	
 
 	local function OpenAct(player, Camera, TweenTo)
-		Essentials.anchorTo(self.weldCon, player.Character:WaitForChild("RightFoot"), self.anchorPart)
-		Essentials.MoveToParent(self.openPart, game.Lighting)
+		Essentials.anchorTo(newShop.weldCon, player.Character:WaitForChild("RightFoot"), newShop.anchorPart)
+		Essentials.MoveToParent(newShop.openPart, game.Lighting)
 		----------------------------------------------------------------------------------------
 		Camera.CameraType = Enum.CameraType.Scriptable 
 		local t = TweenService:Create(Camera,TweenInfo.new(1),{CFrame = TweenTo.CFrame})
@@ -144,35 +151,64 @@ function Shop:New(ShopFolder, GuiFrame)
 	end
 
 	
-	self.openPart.ProximityPrompt.Triggered:Connect(function(player)
-		self.clickSound:Play()
-		OpenAct(player,workspace.CurrentCamera, self.viewPart)
-		Essentials.uiTween(self.frame.DetailsFrame, 1, self.uiT)
-		self.frame.Visible = true
-		self.Show(self.T, self.ItemTable)
+	newShop.openPart.ProximityPrompt.Triggered:Connect(function(player)
+		newShop.clickSound:Play()
+		newShop.buy.TextLabel.Text = "..."
+		OpenAct(player,workspace.CurrentCamera, newShop.viewPart)
+		Essentials.uiTween(newShop.frame.DetailsFrame, 1, newShop.uiT)
+		newShop.frame.Visible = true
+		newShop:Show()
 	end)
 	
-	self.close.MouseButton1Down:Connect(function()
-		self.clickSound:Play()
+	newShop.close.MouseButton1Down:Connect(function()
+		newShop.clickSound:Play()
 		TweenBackPrevobj()
-		self.currentItem = 1
+		newShop.currentItem = 1
 		SetReturnPart()
-		self.weldCon.Part1 = nil
-		self.camera.CameraType = Enum.CameraType.Custom
-		self.frame.Visible = false
-		Essentials.MoveToParent(self.openPart, game.Workspace)
+		newShop.weldCon.Part1 = nil
+		newShop.camera.CameraType = Enum.CameraType.Custom
+		newShop.frame.Visible = false
+		Essentials.MoveToParent(newShop.openPart, game.Workspace)
+	end)
+
+	newShop.buy.MouseButton1Down:Connect(function()
+		newShop.clickSound:Play()
+		newShop.frame.Visible = false
+
+		newShop.buyFrame.SureFrame.SureCheck.Text = "Are you sure you want to buy "..string.lower(newShop.ItemTable[newShop.T[newShop.currentItem]][2].N.Text).."?"
+		newShop.buyFrame.Visible = true
+		Essentials.uiTween(newShop.buyFrame.SureFrame, 1, newShop.uiT)
+		newShop.buyFrame.SureFrame.Visible = true
 	end)
 	
 	
+	newShop.yes.MouseButton1Down:Connect(function(player)
+		newShop.clickSound:Play()
+		newShop.buyEvent:FireServer(newShop.ItemTable[newShop.T[newShop.currentItem]][2].Name)
+		if newShop.player.leaderstats.Cash.Value >= newShop.ItemTable[newShop.T[newShop.currentItem]][2].Price.Value then
+			newShop.purchaseSound:Play()
+			Essentials.emiter(newShop.showcasePart.Attachment)
+			newShop.buyFrame.Visible = false
+			Essentials.uiTween(newShop.frame.DetailsFrame, 1, newShop.uiT)
+			newShop.frame.Visible = true
+		else
+			newShop.buyFrame.SureFrame.Visible = false
+			Essentials.uiTween(newShop.buyFrame.NotEnoughFrame, 1, newShop.uiT)
+			newShop.buyFrame.NotEnoughFrame.Visible = true
+			
+		end
+	end)
 	
 	
-		return t
+	newShop.no.MouseButton1Down:Connect(function()
+		newShop.clickSound:Play()
+		newShop.buyFrame.Visible = false
+		Essentials.uiTween(newShop.frame.DetailsFrame, 1, newShop.uiT)
+		newShop.frame.Visible = true
+	end)
+	
+	return newShop
 end
-
-
-
-
-
 
 
 return Shop
