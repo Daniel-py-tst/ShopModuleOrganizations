@@ -1,4 +1,3 @@
-local player = game.Players.LocalPlayer
 local Shop = require(script.Parent)
 db = true
 
